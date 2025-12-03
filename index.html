@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecommerce Series - Michell Anzola</title>
+
+  <style>
+    body {
+      font-family: system-ui;
+      background-color: #121212; /* negro suave */
+      color: #e6e6e6;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #6a0dad; /* morado */
+      text-shadow: 0 0 6px rgba(106, 13, 173, 0.6);
+      margin-bottom: 25px;
+    }
+
+    /* Contenedor productos (grid responsive) */
+    #productos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .producto {
+      border: 2px solid #6a0dad;
+      background: #1e1e1e; /* gris–negro */
+      border-radius: 10px;
+      padding: 12px;
+      margin: 8px;
+      width: 240px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      transition: transform .2s, box-shadow .2s;
+      color: white;
+    }
+
+    .producto:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.7);
+    }
+
+    .producto img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .producto h3 {
+      margin: 10px 0 6px;
+      font-size: 18px;
+      text-transform: capitalize;
+    }
+
+    .producto p {
+      margin: 6px 0;
+      font-weight: 600;
+    }
+
+    /* Botones */
+    .producto button,
+    .carrito button {
+      background-color: #6a0dad;
+      border: none;
+      color: white;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+      transition: background 0.25s;
+    }
+
+    .producto button:hover,
+    .carrito button:hover {
+      background-color: #520a85;
+    }
+
+    /* Contenedor del carrito */
+    .carrito {
+      margin-top: 10px;
+      padding: 20px;
+      background: #1e1e1e;
+      border-radius: 12px;
+      text-align: left;
+      display: inline-block;
+      border: 2px solid #007bff; /* azul */
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      width: 320px;
+      color: white;
+      vertical-align: top;
+    }
+
+    .carrito h2 {
+      margin-top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .carrito ul {
+      list-style: none;
+      padding-left: 0;
+      max-height: 220px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    .carrito li {
+      margin-bottom: 8px;
+      padding: 6px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+    }
+
+    .carrito p strong {
+      font-size: 16px;
+    }
+
+    .carrito button.vaciar {
+      background-color: #b00020; /* rojo oscuro moderno */
+    }
+
+    .carrito button.vaciar:hover {
+      background-color: #7a0018;
+    }
+
+    /* PayPal container */
+    #paypal-button-container {
+      margin-top: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+      .carrito, .producto {
+        width: 90%;
+      }
+      #productos {
+        gap: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🍽️ Ecommerce series - Michell Anzola</h1>
+
+  <div id="productos"></div>
+
+  <div class="carrito">
+    <h2>
+      <span>🧾 Carrito de Compras</span>
+      <small id="contador-carrito">(0)</small>
+    </h2>
+
+    <ul id="lista-carrito"></ul>
+
+    <p><strong>Total: $<span id="total">0.00</span></strong></p>
+
+    <button class="vaciar" onclick="vaciarCarrito()">🧼 Vaciar Carrito</button>
+
+    <!-- Botón Finalizar local (azul) -->
+    <div id="boton-finalizar-local" style="margin-top:10px;"></div>
+
+    <!-- PayPal Buttons -->
+    <div id="paypal-button-container"></div>
+  </div>
+
+  <!-- PayPal SDK: client-id=sb (sandbox) => reemplaza 'sb' por tu CLIENT_ID en producción -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+
+  <script>
+    const productos = [
+      {
+        id: 1,
+        nombre: "umbrella",
+        precio: 25.00,
+        imagen: "https://media.revistagq.com/photos/5cb7261a1f067de88eaf5e12/master/w_1600,c_limit/series_mas_vistas_netflix_7085.jpg"
+      },
+      {
+        id: 2,
+        nombre: "stranger things",
+        precio: 18.00,
+        imagen: "https://upload.wikimedia.org/wikipedia/en/thumb/b/b1/Stranger_Things_season_1.jpg/250px-Stranger_Things_season_1.jpg"
+      },
+      {
+        id: 3,
+        nombre: "la casa de papel",
+        precio: 30.00,
+        imagen: "https://i.blogs.es/b84be9/la-casa-de-papel-3-netflix/1366_2000.jpg"
+      },
+      {
+        id: 4,
+        nombre: "merlina",
+        precio: 18.00,
+        imagen: "https://www.elconfidencialdigital.com/media/elconfidencialdigital/images/2025/01/03/2025010313124285022.jpg"
+      },
+      {
+        id: 5,
+        nombre: "el juego del calamar",
+        precio: 22.00,
+        imagen: "https://pics.filmaffinity.com/squid_game-688981365-mmed.jpg"
+      }
+    ];
+
+    const carrito = [];
+
+    const contenedorProductos = document.getElementById("productos");
+    const listaCarrito = document.getElementById("lista-carrito");
+    const totalCarrito = document.getElementById("total");
+    const contadorCarrito = document.getElementById("contador-carrito");
+    const botonFinalizarLocalContainer = document.getElementById('boton-finalizar-local');
+
+    /* Mostrar productos */
+    function mostrarProductos() {
+      contenedorProductos.innerHTML = "";
+      productos.forEach(prod => {
+        const div = document.createElement("div");
+        div.className = "producto";
+        div.innerHTML = `
+          <img src="${prod.imagen}" alt="${prod.nombre}">
+          <h3>${prod.nombre}</h3>
+          <p>Precio: $${prod.precio.toFixed(2)}</p>
+          <button onclick="agregarAlCarrito(${prod.id})">Agregar al carrito</button>
+        `;
+        contenedorProductos.appendChild(div);
+      });
+    }
+
+    /* Agregar al carrito */
+    function agregarAlCarrito(id) {
+      const productoExistente = carrito.find(p => p.id === id);
+      if (productoExistente) {
+        productoExistente.cantidad++;
+      } else {
+        const producto = productos.find(p => p.id === id);
+        carrito.push({ ...producto, cantidad: 1 });
+      }
+      actualizarCarrito();
+    }
+
+    /* Actualizar UI del carrito */
+    function actualizarCarrito() {
+      listaCarrito.innerHTML = "";
+      let total = 0;
+      let totalItems = 0;
+
+      carrito.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.nombre} x${item.cantidad} - $${(item.precio * item.cantidad).toFixed(2)}`;
+        listaCarrito.appendChild(li);
+
+        total += item.precio * item.cantidad;
+        totalItems += item.cantidad;
+      });
+
+      totalCarrito.textContent = total.toFixed(2);
+      contadorCarrito.textContent = `(${totalItems})`;
+
+      // Re-render PayPal buttons (PayPal requires re-initialization if amount changes)
+      renderizarPayPalButtons();
+    }
+
+    function vaciarCarrito() {
+      if (confirm("¿Estás seguro de que quieres vaciar el carrito?")) {
+        carrito.length = 0;
+        actualizarCarrito();
+      }
+    }
+
+    function finalizarCompraLocal() {
+      if (carrito.length === 0) {
+        alert("El carrito está vacío. Agrega productos antes de finalizar la compra.");
+        return;
+      }
+      alert("🎉 ¡Gracias por tu compra! (Finalización local simulada).");
+      carrito.length = 0;
+      actualizarCarrito();
+    }
+
+    /* Botón finalizar local (opcional) */
+    const botonFinalizar = document.createElement("button");
+    botonFinalizar.textContent = "✅ Finalizar Compra (local)";
+    botonFinalizar.style.backgroundColor = "#007bff"; // azul
+    botonFinalizar.style.marginTop = "10px";
+    botonFinalizar.style.color = "white";
+    botonFinalizar.style.padding = "10px";
+    botonFinalizar.style.borderRadius = "6px";
+    botonFinalizar.style.border = "none";
+    botonFinalizar.onclick = finalizarCompraLocal;
+    botonFinalizarLocalContainer.appendChild(botonFinalizar);
+
+    /* --- PAYPAL BUTTONS --- 
+       Nota: el SDK de PayPal ya está cargado arriba con client-id=sb (sandbox).
+       En producción reemplaza 'sb' por tu client-id real en la URL del SDK.
+    */
+    function getTotalAmount() {
+      // Devuelve una cadena o número con 2 decimales
+      const total = carrito.reduce((s, item) => s + item.precio * item.cantidad, 0);
+      // Si total es 0, PayPal no debe crear la orden: devolver null
+      return Number(total.toFixed(2));
+    }
+
+    // Contenedor PayPal
+    const paypalContainer = document.getElementById('paypal-button-container');
+
+    // Mantener referencia para que no se añadan múltiples sets de botones en DOM
+    let paypalButtonsRendered = false;
+
+    function renderizarPayPalButtons() {
+      // Limpia contenedor
+      paypalContainer.innerHTML = "";
+
+      const amount = getTotalAmount();
+      if (amount <= 0) {
+        // Si no hay monto, muestra mensaje o deja vacío
+        paypalContainer.innerHTML = "<p style='color:#ccc;margin-top:8px;'>Añade productos para pagar con PayPal</p>";
+        paypalButtonsRendered = false;
+        return;
+      }
+
+      // Renderizar botones con la cantidad actual
+      paypal.Buttons({
+        style: {
+          layout: 'vertical',
+          color:  'gold',
+          shape:  'rect',
+          label:  'paypal'
+        },
+
+        // Crear orden con el total actual
+        createOrder: function(data, actions) {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: amount.toString() // debe ser string
+              },
+              description: `Compra en Inkplosion - ${amount.toFixed(2)} USD`
+            }]
+          });
+        },
+
+        // Capturar la orden después de la aprobación
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(function(details) {
+            // Aquí podrías enviar los detalles al servidor para registro
+            alert("✅ Pago recibido: " + details.payer.name.given_name + ". ¡Gracias por tu compra!");
+            // Limpiar carrito
+            carrito.length = 0;
+            actualizarCarrito();
+          });
+        },
+
+        onError: function(err) {
+          console.error('PayPal error', err);
+          alert("Ocurrió un error con PayPal. Revisa la consola y prueba de nuevo.");
+        },
+
+        onCancel: function (data) {
+          alert("Pago cancelado.");
+        }
+      }).render('#paypal-button-container')
+      .then(() => {
+        paypalButtonsRendered = true;
+      });
+    }
+
+    // Inicializar
+    mostrarProductos();
+    actualizarCarrito();
+
+    // Nota: si añades rutas de pago en el servidor, reemplaza la creación/captura de orden
+    // por llamadas a tu API que creen la orden en el servidor y devuelvan orderID.
+  </script>
+
+</body>
+</html>
